@@ -7,6 +7,7 @@ import SeriesPage from './pages/SeriesPage'
 import SearchPage from './pages/SearchPage'
 import FavoritesPage from './pages/FavoritesPage'
 import WatchPage from './pages/WatchPage'
+import Footer from './components/Footer'
 
 export default function App() {
   return (
@@ -29,6 +30,12 @@ export default function App() {
 
       {/* Global modal */}
       <MovieModal />
+
+      {/* Footer is hidden on watch pages */}
+      <Routes>
+        <Route path="/watch/*" element={null} />
+        <Route path="*" element={<Footer />} />
+      </Routes>
     </BrowserRouter>
   )
 }

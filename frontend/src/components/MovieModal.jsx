@@ -74,19 +74,11 @@ export default function MovieModal() {
 
       {/* Modal */}
       <div className="relative w-full md:max-w-3xl md:max-h-[90vh] bg-[#0e0e0e] md:rounded-2xl overflow-hidden shadow-2xl border border-white/5 animate-scale-in flex flex-col max-h-screen">
-        {/* Hero image / Trailer */}
-        <div className="relative h-64 md:h-80 shrink-0 bg-black">
-          {showTrailer && trailer ? (
-            <iframe
-              className="w-full h-full"
-              src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1`}
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              title="Trailer"
-            />
-          ) : backdrop ? (
+        {/* Hero image */}
+        <div className="relative h-64 md:h-80 shrink-0">
+          {backdrop && (
             <img src={backdrop} alt="" className="w-full h-full object-cover" />
-          ) : null}
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0e0e0e] via-[#0e0e0e]/50 to-transparent" />
 
           {/* Close */}
@@ -146,7 +138,7 @@ export default function MovieModal() {
               <Play size={16} className="fill-black" />
               Watch Now
             </button>
-            {trailer && !showTrailer && (
+            {trailer && (
               <button
                 onClick={() => setShowTrailer(true)}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#e52d27] text-white font-bold rounded-xl hover:bg-[#e52d27]/90 cursor-pointer transition-all text-sm"
@@ -207,6 +199,27 @@ export default function MovieModal() {
           )}
         </div>
       </div>
+
+      {/* Fullscreen Trailer Overlay */}
+      {showTrailer && trailer && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-lg p-4 md:p-12 animate-fade-in">
+          <button
+            onClick={() => setShowTrailer(false)}
+            className="absolute top-6 right-6 md:top-8 md:right-8 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 cursor-pointer transition-all backdrop-blur-md z-50"
+          >
+            <X size={24} />
+          </button>
+          <div className="w-full max-w-5xl aspect-video rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 relative">
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${trailer.key}?autoplay=1`}
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+              title="Trailer"
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
