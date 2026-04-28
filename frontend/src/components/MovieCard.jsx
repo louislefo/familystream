@@ -20,9 +20,9 @@ export default function MovieCard({ item, size = 'md' }) {
   const fav = isFavorite(item.id)
 
   const sizeClasses = {
-    sm: 'w-32 md:w-36',
-    md: 'w-40 md:w-44',
-    lg: 'w-48 md:w-52',
+    sm: 'w-32 md:w-36 shrink-0',
+    md: 'w-40 md:w-44 shrink-0',
+    lg: 'w-full', // fully responsive for grids
   }
 
   const handlePlay = (e) => {
@@ -41,7 +41,7 @@ export default function MovieCard({ item, size = 'md' }) {
 
   return (
     <div
-      className={`${sizeClasses[size]} shrink-0 group relative cursor-pointer`}
+      className={`${sizeClasses[size]} ${size !== 'lg' ? 'shrink-0' : ''} group relative cursor-pointer`}
       onClick={handleClick}
     >
       {/* Poster */}

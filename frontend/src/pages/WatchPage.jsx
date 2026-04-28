@@ -10,6 +10,7 @@ export default function WatchPage() {
   const iframeRef = useRef(null)
   const [details, setDetails] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [cinemaMode, setCinemaMode] = useState(false)
   const [currentSeason, setCurrentSeason] = useState(parseInt(season))
   const [currentEpisode, setCurrentEpisode] = useState(parseInt(episode))
@@ -40,7 +41,10 @@ export default function WatchPage() {
           media_type: type,
         })
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        setLoading(false)
+        setError(true)
+      })
   }, [id, type])
 
   useEffect(() => {
@@ -92,7 +96,7 @@ export default function WatchPage() {
     <div className={`min-h-screen bg-[#050505] ${cinemaMode ? 'fixed inset-0 z-[200]' : ''}`}>
       <div className={`${
         cinemaMode
-          ? 'absolute top-0 left-0 right-0 z-10 p-4 bg-gradient-to-b from-black/80 to-transparent'
+          ? 'fixed top-0 left-0 right-0 z-[300] p-4 bg-gradient-to-b from-black/80 to-transparent opacity-0 hover:opacity-100 transition-opacity'
           : 'pt-20 px-6 md:px-12 pb-4'
         } flex items-center gap-4`}
       >
@@ -101,14 +105,14 @@ export default function WatchPage() {
           className="flex items-center gap-2 text-[#94a3b8] hover:text-white transition-colors cursor-pointer"
         >
           <ArrowLeft size={20} />
-          {!cinemaMode && <span className="text-sm">Retour</span>}
+          {!cinemaMode && <span className="text-sm">Back</span>}
         </button>
         {!cinemaMode && (
           <div className="flex-1 min-w-0">
             <h1 className="text-white font-bold text-lg truncate">{title}</h1>
             {!isMovie && (
               <p className="text-[#64748b] text-sm">
-                Saison {currentSeason} — Épisode {currentEpisode}
+                Season {currentSeason} — Episode {currentEpisode}
               </p>
             )}
           </div>
@@ -117,14 +121,14 @@ export default function WatchPage() {
           <button
             onClick={() => setIframeKey(k => k + 1)}
             className="text-[#94a3b8] hover:text-white cursor-pointer transition-colors p-1"
-            title="Recharger le lecteur"
+            title="Reload player"
           >
             <RefreshCw size={16} />
           </button>
           <button
             onClick={() => setCinemaMode(c => !c)}
             className="text-[#94a3b8] hover:text-white cursor-pointer transition-colors p-1"
-            title={cinemaMode ? 'Quitter le mode cinéma' : 'Mode cinéma'}
+            title={cinemaMode ? 'Exit cinema mode' : 'Cinema mode'}
           >
             {cinemaMode ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
           </button>
@@ -141,7 +145,17 @@ export default function WatchPage() {
           className={`relative w-full bg-black ${cinemaMode ? 'h-screen' : ''}`}
           style={!cinemaMode ? { paddingBottom: '56.25%', height: 0 } : {}}
         >
-          {loading || !embedUrl ? (
+          {error ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#050505] text-center px-4">
+              <p className="text-xl font-bold text-white mb-2">Sorry, this movie is not available.</p>
+              <button 
+                onClick={() => navigate(-1)} 
+                className="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors cursor-pointer"
+              >
+                Go Back
+              </button>
+            </div>
+          ) : loading || !embedUrl ? (
             <div className="absolute inset-0 flex items-center justify-center bg-[#050505]">
               <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-2 border-[#6366f1]/30 border-t-[#6366f1] rounded-full animate-spin" />
@@ -156,6 +170,7 @@ export default function WatchPage() {
               className={`${cinemaMode ? 'w-full h-full' : 'absolute top-0 left-0 w-full h-full'} border-0`}
               allowFullScreen
               allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+              sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
               title={title}
             />
           )}
