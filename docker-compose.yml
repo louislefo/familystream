@@ -4,8 +4,8 @@ services:
     build: .
     container_name: familystream
     ports:
-      - "8080:80"
+      - "8081:80"
     environment:
       # Put your TMDB API Key here.
-      - TMDB_API_KEY= replace_this_with_your_api_key
+      - TMDB_API_KEY=replace_this_with_your_api_key
     restart: unless-stopped

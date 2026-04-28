@@ -2,14 +2,22 @@ import axios from 'axios'
 
 const TMDB_BASE = 'https://api.themoviedb.org/3'
 const TMDB_IMAGE = 'https://image.tmdb.org/t/p'
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY
+const rawApiKey = import.meta.env.VITE_TMDB_API_KEY || ''
+// Remove quotes if the user accidentally put them in docker-compose.yml
+const API_KEY = rawApiKey.replace(/^["']|["']$/g, '').trim()
+
+// If the key is very long (JWT), it's a Read Access Token (v4). Otherwise, it's an API Key (v3).
+const isBearerToken = API_KEY.length > 50
 
 const tmdb = axios.create({
   baseURL: TMDB_BASE,
   params: {
-    api_key: API_KEY,
+    ...(isBearerToken ? {} : { api_key: API_KEY }),
     language: 'en-US',
   },
+  headers: {
+    ...(isBearerToken ? { Authorization: `Bearer ${API_KEY}` } : {}),
+  }
 })
 
 // Image URL helpers
