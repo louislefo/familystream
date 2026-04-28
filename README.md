@@ -2,7 +2,7 @@
 
 A premium, private streaming platform built with a modern React frontend and a robust FastAPI Python backend. FamilyStream provides an elegant, Netflix-like interface to browse, search, and stream your favorite movies and TV series using TMDB for metadata and an embedded Vaplayer for video playback.
 
-![FamilyStream Home](images\readme\home.png) 
+![FamilyStream Home](images/readme/home.png) 
 
 ## ✨ Features
 
