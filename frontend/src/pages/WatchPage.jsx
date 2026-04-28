@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Maximize2, Minimize2, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Maximize2, Minimize2, RefreshCw, Server } from 'lucide-react'
 import { getMovieDetails, getSeriesDetails } from '../services/tmdb'
 import { useHistoryStore } from '../store'
+
+const SERVERS = [
+  { id: 'vaplayer', name: 'VaPlayer' },
+  { id: 'vidsrc.me', name: 'VidSrc.me' },
+  { id: 'vidsrc.to', name: 'VidSrc.to' },
+  { id: '2embed', name: '2Embed' },
+  { id: 'embed.su', name: 'Embed.su' },
+  { id: 'vidlink', name: 'VidLink' },
+]
 
 export default function WatchPage() {
   const { type, id, season = '1', episode = '1' } = useParams()
@@ -15,6 +24,7 @@ export default function WatchPage() {
   const [currentSeason, setCurrentSeason] = useState(parseInt(season))
   const [currentEpisode, setCurrentEpisode] = useState(parseInt(episode))
   const [iframeKey, setIframeKey] = useState(0)
+  const [selectedServer, setSelectedServer] = useState(SERVERS[0].id)
   const { addToHistory, updateProgress, getProgress } = useHistoryStore()
   // ✅ Capture de la progression UNE SEULE FOIS au chargement
   // On utilise un ref pour ne pas déclencher de re-render quand la progression change
@@ -64,7 +74,8 @@ export default function WatchPage() {
   const embedUrl = useMemo(() => {
     if (!details) return ''
     const imdbId = details.external_ids?.imdb_id
-    const mediaId = imdbId || id
+    const tmdbId = id
+    const mediaId = imdbId || tmdbId
 
     const params = new URLSearchParams()
     params.set('primaryColor', '#6366f1')
@@ -76,12 +87,28 @@ export default function WatchPage() {
     const qs = `?${params.toString()}`
 
     if (isMovie) {
-      return `https://vaplayer.ru/embed/movie/${mediaId}${qs}`
+      switch (selectedServer) {
+        case 'vidsrc.me': return `https://vidsrc.me/embed/movie/${mediaId}`
+        case 'vidsrc.to': return `https://vidsrc.to/embed/movie/${mediaId}`
+        case '2embed': return `https://www.2embed.cc/embed/${mediaId}`
+        case 'embed.su': return `https://embed.su/embed/movie/${tmdbId}`
+        case 'vidlink': return `https://vidlink.pro/movie/${mediaId}`
+        case 'vaplayer':
+        default: return `https://vaplayer.ru/embed/movie/${mediaId}${qs}`
+      }
     } else {
-      return `https://vaplayer.ru/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}${qs}`
+      switch (selectedServer) {
+        case 'vidsrc.me': return `https://vidsrc.me/embed/tv?imdb=${mediaId}&season=${currentSeason}&episode=${currentEpisode}`
+        case 'vidsrc.to': return `https://vidsrc.to/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+        case '2embed': return `https://www.2embed.cc/embedtv/${mediaId}&s=${currentSeason}&e=${currentEpisode}`
+        case 'embed.su': return `https://embed.su/embed/tv/${tmdbId}/${currentSeason}/${currentEpisode}`
+        case 'vidlink': return `https://vidlink.pro/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+        case 'vaplayer':
+        default: return `https://vaplayer.ru/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}${qs}`
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [details, id, isMovie, currentSeason, currentEpisode, iframeKey])
+  }, [details, id, isMovie, currentSeason, currentEpisode, iframeKey, selectedServer])
 
   const changeEpisode = (s, ep) => {
     setCurrentSeason(s)
@@ -170,7 +197,6 @@ export default function WatchPage() {
               className={`${cinemaMode ? 'w-full h-full' : 'absolute top-0 left-0 w-full h-full'} border-0`}
               allowFullScreen
               allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-              sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
               title={title}
             />
           )}
@@ -178,11 +204,31 @@ export default function WatchPage() {
       </div>
 
       {!cinemaMode && !loading && embedUrl && (
-        <div className="max-w-6xl mx-auto px-6 md:px-12 pt-3">
-          <p className="text-[#475569] text-xs flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 inline-block"></span>
-            If the player doesn't load, disable your adblocker for this site.
-          </p>
+        <div className="max-w-6xl mx-auto px-6 md:px-12 pt-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[#0e0e0e] p-4 rounded-xl border border-white/5">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2 text-[#e2e8f0] font-medium">
+                <Server size={16} className="text-[#6366f1]" />
+                Select Video Server
+              </div>
+              <p className="text-[#94a3b8] text-xs">If the video is blocked or buffering, try another server.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {SERVERS.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => setSelectedServer(s.id)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+                    selectedServer === s.id
+                      ? 'bg-[#6366f1] text-white shadow-lg'
+                      : 'bg-white/5 text-[#94a3b8] hover:bg-white/10 hover:text-white border border-white/10'
+                  }`}
+                >
+                  {s.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
